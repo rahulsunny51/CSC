@@ -1,0 +1,13 @@
+1.
+Part 1- One of the popular approaaches to solve the priority inversion problem is 'Priority Ceiling'.
+In this method each resource (in our case a lock)  is associated with certain priority. We call this priority
+as Lock Priority.The priorityis indentified the highest priority process which can access it. So once the priority
+of the lock is  identified, each process which tries to access the resource will be associated with lock priority
+instead of it's own only till it accesses the lock. Once its releases the lock  it's priority will be set to its
+original value. 
+
+Ex: Suppose we have lock resource A with lock priority 100. There is a process 'Test' with priority 50 which accesses 
+lock A. When the lock is granted to 'Test', its priority will temporarily be 100 while its accessing lock A. Upon 
+releasing the lock its priority is reset to 50. This is repeated for every process accessing the lock A.
+
+Part2- 
