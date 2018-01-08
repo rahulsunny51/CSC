@@ -1,0 +1,98 @@
+Answers to Additonal Questions.
+
+1.	XINU Memory layout
+	
+	__________________________
+        |Address start 0x00______|
+	|________________________|
+	|__Free Memory Segment___|
+	|________________________|
+	|			 |
+	|	TEXT		 |
+	|________________________|-------->etext 0x00019087
+	|			 |
+	|	DATA		 |
+	|________________________|-------->edata 0x0001e540
+	|			 |
+	|	END		 |
+	|________________________|-------->end 0x00026bb8
+	|			 |
+	|	HEAP		 |	
+	|________________________|
+	|                        |-------->Base pointer of Process (esp) 0x00ffcff8
+	|  Temp Process 	 |
+	|    (Process B)	 |-------->Stack pointer of Process (esp) 0x00ffcf5c
+	|			 |
+	|________________________|-------->Limit of Process B 0x00ffbffc
+	|__Free Memory Segement__|
+	|________________________|
+	|                        |-------->Base pointer of Process (esp) 0x00ffeff8
+	|  Main         	 |-------->Stack pointer of Process (esp) 0x00ffef10
+	|			 |
+	|________________________|-------->Limit of Process B 0x00ffdffc
+	|                        |
+	|  Free Memory         	 |
+	|			 |
+	|________________________|
+The above diagram indicates the memort blocks used by Xinu's processes. (Assume the address starts at 0x000000000 
+and increases as go down the memory blocks. Based on my observations(output of printprocstks(), Main process has its stack
+with stack pointer and base with values represented in the diagram. Once we create a process from main , its corresponding 
+stack will be created with the values as represented in figure. The stack values of Process B is less than that of Main hence 
+it would be located above the Main's stack. Also, note there may be fragments of free memory which are not assigned to  any process.
+The text segment holds all the instructions, data sections contains initialised variables and the end pointer denotes start of stack 
+which holds all the dynamically created varaibles. 	
+		
+2.The stack pointer before the fucntion call is: ebp.
+  The stack pointer after the fucntion call is: ebp+2.
+  When the fucnction call is invoked the caller function pushes the EIP(Instrcuction pointer) onto the stack which
+  references to the instruction in main post the fucntion call. The calle fucntion pushes the main's EBP which would be 
+  the return address along with pusing the arguments in the reverse order (denoted by Stack Frame in the 
+  figure).
+  The following figure illustrates the process:
+	a)Before function call			  b)After EIP is pushed by caller
+	
+		|__________|				 |__________|
+		|__________|				 |__________|
+		|__________|				 |__________|
+		|__________|			(tos)--->|____EIP___|
+    (tos)--->   |____EBP___|				 |____EBP___|
+
+
+	c)Main EBP pushed by callee
+       (tos)--->|___ESP______|
+		|Stack       |
+		|Frame_______|				
+		|____________|				
+                |_Pushed EBP_| (EBP+2)				 
+		|____EIP_____| (EBP+1)			
+       		|____EBP_____|		
+	
+	(Reference: https://www.csee.umbc.edu/~chang/cs313.s02/stack.shtml)
+		 
+3. The byte order used is in the host machine is little Endian. The command "echo -n I | od -to2 | head -n1 | cut -f2 -d" " | cut -c6 "
+   returns 0 and 1 if the system uses Big Endian and Little Endian respectively. The output of this command returned the value
+   1 hence confirming the byte order used is Little Endian.
+	
+	(Reference: https://serverfault.com/questions/163487/how-to-tell-if-a-linux-system-is-big-endian-or-little-endian)
+
+4. mov  - used to copy the values of one source register (or a literal)  to the destination register.
+	Syntax: mov a b (a - source b - destination)
+   push - used to push contents of a pirticular register onto the stack.
+	 Syntax: push 0(%push)  (pushes the contents of register at 0 offset from EBP on the stack)
+   pusha- used to push contents of more than one register onto the stack. It generally pushes all the general puprose registers
+	  onto the satck.
+	 Syntax: pusha (Pushes general purpose the registers in the order : AX,BX,CX,DX,ESP,ESI,EDI).
+   pop  - used to restore the top of stack element from the stack.
+	 Syntax: push ebp  (removes the value EBP from the stack and restores it).
+   pusha- used to restore contents of more than one register from the top of stack. It generally pops all the general puprose registers
+	  onto the satck.
+	 Syntax: popa (restores general purpose the registers in the order : DX,BX,CX,AX,DI,EPI,ESI,EAX).
+   	
+	(Reference: https://stackoverflow.com/questions/29728171/x86-assembly-set-of-pushes-and-pusha-difference)
+
+5. The local variables are stored below the top of the stack. But the output of printtos() doesnt print out locations of all the 
+   local variables as the compiler optimization is enabled in the Make file because of this optimization a defragmnter runs which
+   assigns addresses to local varibles randomnly. When the optimization is disabled the local variables are stored at sequential 
+   locations.
+
+	(Reference: https://community.norton.com/en/forums/what-does-optimize-really-do)
